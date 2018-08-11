@@ -1,0 +1,146 @@
+---
+title: "Untitled"
+author: "Stefan Gouyet"
+date: "8 août 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(ggthemes)
+library(lubridate)
+library(readr)
+library(animation)
+library(gganimate)
+df <- read_csv("athlete_events.csv")
+
+sport_count <- df %>% count(Sport, sort=TRUE)
+```
+
+* for the purpose of this article we will only look at Sport == "Football" & 
+
+```{r cars}
+
+soccer_olympics <- df %>% filter(Event == "Football Men's Football")
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r Average Age of Medal Winners, echo=FALSE}
+
+medal_winners <- soccer_olympics %>% filter(Medal %in% c("Gold","Silver", "Bronze"))
+medal_winners$Medal <- medal_winners$Medal %>% factor(levels = c("Gold", "Silver", "Bronze"))
+
+age_medal_winners <- medal_winners %>% 
+  group_by(Team,Games,Year,Medal) %>%
+  summarise(mean_age = mean(Age,na.rm = TRUE))
+
+age_medal_winners %>%
+  ggplot(aes(x = Year,
+             y = mean_age,
+             color = Medal)) +
+  geom_point()+
+  geom_smooth()+
+ 
+
+
+age_medal_winners %>%
+  ggplot(aes(x = Year,
+             y = mean_age,
+             color = Medal)) +
+  geom_smooth()
+
+```
+
+```{r}
+
+
+
+age_olympics <- soccer_olympics %>% 
+  group_by(Team,Games,Year) %>%
+  summarise(mean_age = mean(Age,na.rm = TRUE))
+
+static_plot <-
+age_olympics %>%
+  ggplot(aes(x = Year,
+             y = mean_age
+            )) +
+  geom_point()+
+  geom_smooth(method="loess")+
+  theme_tufte()+
+   ggtitle('Mean Age of Soccer Teams at the Olympics')+ 
+      theme(legend.position="none")+
+        theme(plot.title = element_text(size = 22, 
+                                        face= "italic",
+                                        hjust = 0.5))+
+      scale_x_continuous(breaks=seq(1900,2020,15), limits = c(1900,2020))+
+      scale_y_continuous(breaks=seq(18,30,3), limits = c(18,30))+
+  labs(y = "Mean Age", caption ="Data from Kaggle.com")
+
+ggsave("static_plot.png",static_plot, width = 30, height = 15, units = "cm")
+
+
+```
+
+
+```{r}
+
+
+saveGIF({
+for (i in 1900:2016) {
+    
+    year_games <- as.character(i)
+    
+    year_data <- age_olympics %>% filter(Year <= i)
+    
+      
+    gg <-  year_data %>%
+  ggplot(aes(x = Year,
+             y = mean_age
+            )) +
+  geom_point()+
+       geom_smooth(method = "auto", se = FALSE)+
+  theme_tufte()+
+   ggtitle(paste0('Mean Age of Soccer Teams at the Olympics (1900 - ', year_games,")"))+ 
+      theme(legend.position="none")+
+        theme(plot.title = element_text(size = 22, 
+                                        face= "italic",
+                                        hjust = 0.5))+
+      scale_x_continuous(breaks=seq(1900,2020,10), limits = c(1900,2020))+
+      scale_y_continuous(breaks=seq(18,30,2), limits = c(18,30))+
+  labs(y = "Mean Age", caption ="Data from Kaggle.com")
+   
+ 
+     #+ 
+    print(gg)
+}
+  }, movie.name = 'olympic_team_ages.gif', interval = 0.2, ani.width = 1000, ani.height = 700)
+
+```
+
+
+```{r}
+
+gg <- age_olympics %>%
+  ggplot(aes(x = Year,
+             y = mean_age,
+             frame = cumulative,
+             
+            )) +
+  geom_jitter()+
+  geom_smooth(method="loess")+
+  theme_tufte()+
+   ggtitle(paste0('Mean Age of Soccer Players at Olympics (1900 - ', year_games,")"))+ 
+      theme(legend.position="none")+
+        theme(plot.title = element_text(size = 22, 
+                                        face= "italic",
+                                        hjust = 0.5))+
+  scale_x_continuous(breaks=seq(1900,2020,10))+
+  labs(y = "Mean Age", caption ="Data from Kaggle.com")
+
+```
+
