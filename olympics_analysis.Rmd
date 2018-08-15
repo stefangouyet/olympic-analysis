@@ -44,7 +44,7 @@ age_medal_winners %>%
              y = mean_age,
              color = Medal)) +
   geom_point()+
-  geom_smooth()+
+  geom_smooth()
  
 
 
@@ -81,8 +81,15 @@ age_olympics %>%
       scale_y_continuous(breaks=seq(18,30,3), limits = c(18,30))+
   labs(y = "Mean Age", caption ="Data from Kaggle.com")
 
-ggsave("static_plot.png",static_plot, width = 30, height = 15, units = "cm")
+#ggsave("static_plot.png",static_plot, width = 30, height = 15, units = "cm")
 
+
+```
+
+```{r simple analysis}
+
+NOC_mean_age <- soccer_olympics %>% group_by(NOC) %>% summarize(mean_age = mean(Age,na.rm=TRUE),
+                                                                      count = n())
 
 ```
 
